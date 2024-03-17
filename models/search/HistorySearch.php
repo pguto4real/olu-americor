@@ -71,7 +71,17 @@ class HistorySearch extends History
             'call',
             'fax',
         ]);
+        isset($params["user_id"]) &&  $query->andFilterWhere(["=", "user_id", $params["user_id"]]);
+        isset($params["customer_id"]) &&  $query->andFilterWhere(["=", "customer_id", $params["customer_id"]]);
+        isset($params["event"]) &&  $query->andFilterWhere(["=", "event", $params["event"]]);
 
         return $dataProvider;
+    }
+
+    static function getUniqueEvents()
+    {
+        return \Yii::$app->getDb()->createCommand("
+          SELECT DISTINCT `event` FROM `history`
+        ")->queryAll();
     }
 }
