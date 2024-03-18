@@ -29,9 +29,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index', [
-            "linkExport" => (new LinkExport())->getLinkExport()
-        ]);
+        return $this->render('index');
     }
 
 
@@ -42,25 +40,25 @@ class SiteController extends Controller
     public function actionExport($exportType)
     {
         $model = new HistorySearch();
+        $dataProvider = $model->search(Yii::$app->request->queryParams);
 
         return $this->render('export', [
-            'dataProvider' => $model->search(Yii::$app->request->queryParams),
+            'dataProvider' => $dataProvider,
             'exportType' => $exportType,
             'model' => $model
         ]);
     }
-
+    /**
+     * Renders the AJAX history list.
+     *
+     * @param string $user_id
+     * @param string $customer_id
+     * @param string $event
+     * @return string
+     */
     function actionAjaxlisthistory($user_id = '', $customer_id = "", $event = "")
     {
-        return $this->render("ajax_list_history", [
-            "linkExport" => (new LinkExport())->getLinkExport(
-                $user_id,
-                $customer_id,
-                $event
-            ),
-            "user_id" => $user_id,
-            "customer_id" => $customer_id,
-            "event" => $event
-        ]);
+        $linkExport = (new LinkExport())->getLinkExport($user_id, $customer_id, $event);
+        return $this->render("ajax_list_history", compact('linkExport', 'user_id', 'customer_id', 'event'));
     }
 }

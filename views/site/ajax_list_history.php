@@ -9,7 +9,9 @@ use yii\helpers\Html;
     <div class="panel-body panel-body-selected">
 
         <div class="pull-sm-right">
-            <?php if (!empty($linkExport)) {
+            <?php
+
+            if (!empty($linkExport) && ($user_id != null || $customer_id != null || $event != null)) {
                 echo Html::a(
                     Yii::t('app', 'CSV'),
                     $linkExport,

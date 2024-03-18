@@ -2,9 +2,11 @@
 
 namespace app\models\search;
 
+
 use app\models\History;
-use yii\base\Model;
+use Throwable;
 use yii\data\ActiveDataProvider;
+use yii\db\Exception;
 
 /**
  * HistorySearch represents the model behind the search form about `app\models\History`.
@@ -21,27 +23,34 @@ class HistorySearch extends History
         return [];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function scenarios()
-    {
-        // bypass scenarios() implementation in the parent class
-        return Model::scenarios();
-    }
+
 
     /**
      * Creates data provider instance with search query applied
      *
-     * @param array $params
-     *
-     * @return ActiveDataProvider
+     * @param array $params The search parameters
+     * *
+     * * @return ActiveDataProvider The data provider
      */
     public function search($params)
     {
-        $query = History::find();
+        $query = History::find()->with([
+            'customer',
+            'user',
+            'sms',
+            'task',
+            'call',
+            'fax',
+        ]);
 
-        // add conditions that should always apply here
+        // Filtering based on search parameters
+        if (!empty($params)) {
+            $query->andFilterWhere([
+                'user_id' => $params['user_id'] ?? null,
+                'customer_id' => $params['customer_id'] ?? null,
+                'event' => $params['event'] ?? null,
+            ]);
+        }
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -50,38 +59,30 @@ class HistorySearch extends History
         $dataProvider->setSort([
             'defaultOrder' => [
                 'ins_ts' => SORT_DESC,
-                'id' => SORT_DESC
+                'id' => SORT_DESC,
             ],
         ]);
 
+        // Load search parameters
         $this->load($params);
-
-        if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            $query->where('0=1');
-            return $dataProvider;
-        }
-
-        $query->addSelect('history.*');
-        $query->with([
-            'customer',
-            'user',
-            'sms',
-            'task',
-            'call',
-            'fax',
-        ]);
-        isset($params["user_id"]) &&  $query->andFilterWhere(["=", "user_id", $params["user_id"]]);
-        isset($params["customer_id"]) &&  $query->andFilterWhere(["=", "customer_id", $params["customer_id"]]);
-        isset($params["event"]) &&  $query->andFilterWhere(["=", "event", $params["event"]]);
 
         return $dataProvider;
     }
 
+    /**
+     * Retrieves unique events from the history table.
+     *
+     * @return array The list of unique events
+     * @throws Exception
+     */
     static function getUniqueEvents()
     {
-        return \Yii::$app->getDb()->createCommand("
-          SELECT DISTINCT `event` FROM `history`
-        ")->queryAll();
+        try {
+            $sql = "SELECT DISTINCT `event` FROM `history`";
+            $command = \Yii::$app->getDb()->createCommand($sql);
+            return $command->queryAll();
+        } catch (Throwable $e) {
+            throw new Exception("Error fetching unique events: " . $e->getMessage());
+        }
     }
 }

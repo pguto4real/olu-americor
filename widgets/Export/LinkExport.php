@@ -2,9 +2,9 @@
 
 namespace app\widgets\Export;
 
-use app\widgets\Export\Export;
+
+use kartik\export\ExportMenu;
 use Yii;
-use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
 class LinkExport
@@ -12,17 +12,24 @@ class LinkExport
 
     static function getLinkExport($user_id = '', $customer_id = "", $event = "")
     {
-        $params = Yii::$app->getRequest()->getQueryParams();
+        // Get current query parameters
+        $queryParams = Yii::$app->getRequest()->getQueryParams();
 
-        $params["user_id"] = $user_id;
-        $params["customer_id"] = $customer_id;
-        $params["event"] = $event;
+        // Set export-specific parameters
+        $exportParams = [
+            'exportType' => ExportMenu::FORMAT_CSV,
+            'user_id' => $user_id,
+            'customer_id' => $customer_id,
+            'event' => $event,
+        ];
 
-        $params = ArrayHelper::merge([
-            'exportType' => Export::FORMAT_CSV
-        ], $params);
-        $params[0] = 'site/export';
+        // Merge export parameters with existing query parameters
+        $mergedParams = array_merge($queryParams, $exportParams);
 
-        return Url::to($params);
+        // Set the route for exporting
+        $mergedParams[0] = 'site/export';
+
+        // Generate the export link
+        return Url::to($mergedParams);
     }
 }

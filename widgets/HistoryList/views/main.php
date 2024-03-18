@@ -7,10 +7,6 @@ use yii\helpers\Html;
 use yii\widgets\ListView;
 use yii\widgets\Pjax;
 
-/* @var $this yii\web\View */
-/* @var $dataProvider ActiveDataProvider */
-/* @var $model HistorySearch */
-/* @var $linkExport string */
 
 ?>
 
